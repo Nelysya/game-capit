@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Game Capit — Minimal</title>
+<style>
+  :root { --w: 400px; --h: 600px; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body{
+    margin:0; overflow:hidden; display:flex; align-items:center; justify-content:center;
+    background: #e9eefc url('assets/images/bg.jpg') center/cover no-repeat fixed;
+  }
+  canvas { width: var(--w); height: var(--h); background: rgba(255,255,255,0.6); border:3px solid #333; border-radius:10px; }
+  #score{ position:fixed; top:10px; left:10px; font: 700 18px/1.2 system-ui, Arial; color:#111; text-shadow:0 1px 0 #fff; }
+  .hint{ position:fixed; bottom:10px; left:50%; transform:translateX(-50%); font: 500 14px system-ui; background: rgba(255,255,255,0.6); padding:6px 10px; border-radius:8px; border:1px solid rgba(0,0,0,0.2);}
+</style>
+</head>
+<body>
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div class="hint">← → untuk geser • Spasi untuk menurunkan capit</div>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let score = 0;
+let clawY = 100;
+let clawX = canvas.width / 2;
+let clawLength = 0;
+let extending = false;
+let retracting = false;
+
+let prize = spawnPrize();
+
+function spawnPrize() {
+  return { x: Math.random() * (canvas.width - 40) + 20, y: canvas.height - 100, caught: false };
+}
+
+function drawClaw() {
+  ctx.beginPath();
+  ctx.moveTo(clawX, 0);
+  ctx.lineTo(clawX, clawY + clawLength);
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // claw head
+  ctx.beginPath();
+  ctx.arc(clawX, clawY + clawLength, 15, 0, Math.PI * 2);
+  ctx.fillStyle = '#999';
+  ctx.fill();
+  ctx.stroke();
+}
+
+function drawPrize() {
+  if (!prize.caught) {
+    ctx.beginPath();
+    ctx.rect(prize.x - 15, prize.y - 15, 30, 30);
+    ctx.fillStyle = '#f55';
+    ctx.fill();
+  }
+}
+
+function update() {
+  if (extending) {
+    clawLength += 5;
+    if (clawLength > canvas.height - 50) {
+      extending = false;
+      retracting = true;
+    }
+    if (!prize.caught && Math.abs(clawX - prize.x) < 20 && Math.abs(clawY + clawLength - prize.y) < 20) {
+      prize.caught = true;
+    }
+  } else if (retracting) {
+    clawLength -= 5;
+    if (prize.caught) {
+      prize.y = clawY + clawLength;
+      prize.x = clawX;
+    }
+    if (clawLength <= 0) {
+      retracting = false;
+      if (prize.caught) {
+        score++;
+        document.getElementById('score').textContent = 'Score: ' + score;
+        prize = spawnPrize();
+      }
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawClaw();
+  drawPrize();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft') clawX = Math.max(20, clawX - 20);
+  if (e.key === 'ArrowRight') clawX = Math.min(canvas.width - 20, clawX + 20);
+  if (e.key === ' ') {
+    if (!extending && !retracting) {
+      extending = true;
+    }
+  }
+});
+</script>
+</body>
+</html>
