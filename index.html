@@ -3,16 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Capit (Claw Machine) — Final Merge</title>
+  <title>Game Capit (Claw Machine) — Stable</title>
   <style>
-    :root{
-      --bg:#0f172a;          /* slate-900 */
-      --panel:#111827;       /* gray-900 */
-      --accent:#22d3ee;      /* cyan-400 */
-      --accent2:#a78bfa;     /* violet-400 */
-      --text:#e5e7eb;        /* gray-200 */
-      --green:#10b981;       /* emerald-500 */
-    }
+    :root{ --text:#e5e7eb; --accent:#22d3ee; --accent2:#a78bfa; }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:#0b1224;color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu,Inter,sans-serif}
     body{background: #0b1224 url('assets/images/bg.jpg') center/cover no-repeat fixed;}
@@ -40,7 +33,7 @@
     .toast.show{display:block}
 
     /* Intro overlay */
-    #intro { position: fixed; inset: 0; background:#000; display:flex; align-items:center; justify-content:center; z-index: 9999; transition: opacity .5s ease; }
+    #intro { position: fixed; inset: 0; background: rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index: 9999; transition: opacity .5s ease; }
     #intro.hide{ opacity:0; pointer-events:none; }
     #intro video{ max-width:100vw; max-height:100vh; object-fit:contain; }
     #tapToStart{ position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:#fff; opacity:.95; background: rgba(0,0,0,.45); padding:10px 14px; border:1px solid rgba(255,255,255,.35); border-radius:10px; }
@@ -50,7 +43,7 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>🎯 Game Capit — versi final</h1>
+      <h1>🎯 Game Capit — versi final stabil</h1>
       <div class="hud">
         <div class="badge" id="score">Skor: 0</div>
         <div class="badge" id="tries">Percobaan: 5</div>
@@ -74,12 +67,16 @@
 
   <!-- Intro overlay (video) -->
   <div id="intro">
-    <video id="introVideo" src="assets/video/intro.mp4" playsinline muted></video>
+    <img src="assets/images/bg.jpg" alt="bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(1px) brightness(.9);">
+    <video id="introVideo" src="assets/video/intro.mp4" playsinline muted poster="assets/images/bg.jpg"></video>
     <div id="tapToStart">Tap / Click untuk mulai</div>
     <button id="skipIntro">Skip</button>
   </div>
 
   <script>
+    // ======= SAFE CONSOLE =======
+    window.addEventListener('error', (e)=>{ console.error('JS Error:', e.message); });
+
     // ======= UTIL =======
     const lerp=(a,b,t)=>a+(b-a)*t;
     const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -90,33 +87,15 @@
     const ctx=canvas.getContext('2d');
     const W=canvas.width, H=canvas.height;
 
-    const state={
-      running:false,         // mulai setelah intro selesai / skip
-      mode:'idle',           // 'idle' | 'dropping' | 'lifting' | 'resetting'
-      score:0,
-      tries:5,
-      msg:'Siap!'
-    };
+    const state={ running:false, mode:'idle', score:0, tries:5, msg:'Siap!' };
+    const ui={ score:document.getElementById('score'), tries:document.getElementById('tries'), status:document.getElementById('status'), toast:document.getElementById('toast') };
+    function setToast(text){ ui.toast.textContent=text; ui.toast.classList.add('show'); clearTimeout(setToast._t); setToast._t=setTimeout(()=>ui.toast.classList.remove('show'),1600); }
 
-    const ui={
-      score:document.getElementById('score'),
-      tries:document.getElementById('tries'),
-      status:document.getElementById('status'),
-      toast:document.getElementById('toast')
-    };
-
-    function setToast(text){
-      ui.toast.textContent=text; ui.toast.classList.add('show');
-      clearTimeout(setToast._t);
-      setToast._t=setTimeout(()=>ui.toast.classList.remove('show'),1600);
-    }
-
-    // ======= ASSETS: Prize Images =======
+    // ======= ASSETS =======
     const PRIZE_SRCS=['assets/images/prize1.png','assets/images/prize2.png','assets/images/prize3.png'];
     const PRIZE_IMGS=PRIZE_SRCS.map(src=>{ const i=new Image(); i.src=src; return i; });
     const prizeImg=()=> PRIZE_IMGS[Math.floor(Math.random()*PRIZE_IMGS.length)] || null;
 
-    // ======= ASSETS: Audio =======
     const soundCatch=new Audio('assets/audio/catch.mp3');
     const soundExtend=new Audio('assets/audio/extend.mp3');
     const bgMusic=new Audio('assets/audio/bg-music.mp3');
@@ -124,177 +103,93 @@
 
     function setMuted(m){ [bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m); document.getElementById('audioBtn').textContent=m?'🔇':'🔈'; }
     setMuted(false);
-
     document.getElementById('audioBtn').addEventListener('click',(e)=>{ e.stopPropagation(); setMuted(!bgMusic.muted); });
 
     // ======= WORLD =======
     const groundY=H-60;
-
     const crane={ x:W*0.5, y:80, dir:1, speed:2.2, width:70, arm:18, rope:60, maxDrop:groundY-90 };
 
-    /** Toys represented by image sprites **/
-    const toys=[];
+    const toys=[]; let tClock=0; // time counter for toy animation
     function spawnToys(){
       toys.length=0;
-      const cols=6, rows=2;
-      const padX=70, cellW=(W-2*padX)/cols, cellH=70;
+      const cols=6, rows=2; const padX=70, cellW=(W-2*padX)/cols, cellH=70;
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
           const cx=padX+cellW*(c+0.5)+rand(-8,8);
           const cy=groundY-20 - r*cellH + rand(-6,6);
-          toys.push({x:cx,y:cy,r:22,won:false,img:prizeImg()});
+          const speed = rand(0.6,1.2) * (Math.random()<0.5?-1:1);
+          const phase = Math.random()*Math.PI*2;
+          toys.push({x:cx,y:cy,baseY:cy,r:22,won:false,img:prizeImg(),vx:speed,phase,amp:3+Math.random()*2});
         }
       }
+    }
+
+    function moveToys(dt){
+      const minX=70, maxX=W-70; tClock += dt*0.05;
+      for(const t of toys){ if(t.won) continue; t.x += t.vx*dt; if(t.x<minX){t.x=minX;t.vx=Math.abs(t.vx);} if(t.x>maxX){t.x=maxX;t.vx=-Math.abs(t.vx);} t.y = t.baseY + Math.sin(tClock + t.phase)*t.amp; if(Math.random()<0.003){ t.vx *= -1; } }
     }
 
     spawnToys();
 
     // ======= INPUT =======
-    function tryDrop(){
-      if(!state.running) return; // lock sebelum intro
-      if(state.mode!=='idle' || state.tries<=0) return;
-      state.mode='dropping';
-      state.msg='Menurunkan...';
-      try{ soundExtend.currentTime=0; soundExtend.play(); }catch(_){ }
-      updateHUD();
-    }
-
+    function tryDrop(){ if(!state.running) return; if(state.mode!=='idle' || state.tries<=0) return; state.mode='dropping'; state.msg='Menurunkan...'; try{ soundExtend.currentTime=0; soundExtend.play(); }catch(_){ } updateHUD(); }
     document.getElementById('btnDrop').addEventListener('click',tryDrop);
-    document.getElementById('btnReset').addEventListener('click',()=>{
-      state.score=0; state.tries=5; state.mode='idle'; state.msg='Siap!';
-      crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2;
-      spawnToys();
-      updateHUD(); setToast('Reset! Semangat ✨');
-    });
-
+    document.getElementById('btnReset').addEventListener('click',()=>{ state.score=0; state.tries=5; state.mode='idle'; state.msg='Siap!'; crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2; spawnToys(); updateHUD(); setToast('Reset! Semangat ✨'); });
     window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); tryDrop(); } });
-    canvas.addEventListener('pointerdown',tryDrop); // Touch/tap untuk drop
+    canvas.addEventListener('pointerdown',tryDrop);
 
     function updateHUD(){ ui.score.textContent='Skor: '+state.score; ui.tries.textContent='Percobaan: '+state.tries; ui.status.textContent=state.msg; }
 
-    // ======= GAME LOOP =======
-    let grabbed=null; // index of toy captured
-
-    function drawBackground(){
-      // soft vignette di atas canvas (di atas image bg body)
-      const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H));
-      g.addColorStop(0,'rgba(79,70,229,.28)');
-      g.addColorStop(1,'rgba(0,0,0,.0)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-
-      // Pit area
-      ctx.fillStyle='rgba(13,20,41,.85)';
-      ctx.fillRect(0,groundY,W,H-groundY);
-      ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(0,groundY); ctx.lineTo(W,groundY); ctx.stroke();
-    }
-
-    function drawToys(){
-      for(const t of toys){
-        if(t.won) continue;
-        // shadow
-        ctx.fillStyle='rgba(0,0,0,.35)';
-        ctx.beginPath(); ctx.ellipse(t.x, groundY+8, t.r*0.9, t.r*0.45, 0, 0, Math.PI*2); ctx.fill();
-        // sprite
-        const size=t.r*2; // 44px default
-        if(t.img && t.img.complete){
-          ctx.drawImage(t.img, t.x-size/2, t.y-size/2, size, size);
-        } else {
-          // fallback bentuk bulat
-          ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill();
-        }
-      }
-    }
-
-    function drawCrane(){
-      // rail
-      ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke();
-      // carriage
-      ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22);
-      // rope
-      ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x, 82); ctx.lineTo(crane.x, 82+crane.rope); ctx.stroke();
-      // claw body
-      const cy=82+crane.rope;
-      ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x, cy, 12, 0, Math.PI*2); ctx.fill();
-      // arms
-      ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round';
-      ctx.beginPath(); ctx.moveTo(crane.x, cy);
-      ctx.lineTo(crane.x-14, cy+22); ctx.moveTo(crane.x, cy); ctx.lineTo(crane.x+14, cy+22); ctx.stroke();
-    }
-
-    function update(){
+    // ======= GAME LOOP (with dt) =======
+    let last=performance.now();
+    function update(dt){
       if(!state.running) return; // freeze sebelum intro selesai
-
-      // Move crane left-right when idle
+      moveToys(dt);
       if(state.mode==='idle'){
-        crane.x+=crane.speed*crane.dir;
+        crane.x+=crane.speed*crane.dir*dt;
         if(crane.x<70){crane.x=70; crane.dir=1}
         if(crane.x>W-70){crane.x=W-70; crane.dir=-1}
       }
-
       if(state.mode==='dropping'){
-        crane.rope = clamp(crane.rope+5, 60, crane.maxDrop);
-        const clawY=82+crane.rope;
-        // Check collision with any toy within grip range
-        let hitIndex=-1;
+        crane.rope = clamp(crane.rope+5*dt, 60, crane.maxDrop);
+        const clawY=82+crane.rope; let hitIndex=-1;
         for(let i=0;i<toys.length;i++){
-          const t=toys[i]; if(t.won) continue;
-          const d=Math.hypot(t.x-crane.x, t.y-clawY);
-          if(d < t.r + crane.arm){ hitIndex=i; break; }
+          const t=toys[i]; if(t.won) continue; const d=Math.hypot(t.x-crane.x, t.y-clawY); if(d < t.r + crane.arm){ hitIndex=i; break; }
         }
-        if(clawY>=crane.maxDrop || hitIndex!==-1){
-          grabbed = hitIndex!==-1 ? hitIndex : null;
-          state.mode='lifting'; state.msg= grabbed!==null ? 'Dapat!' : 'Zonk, coba lagi';
-          updateHUD();
-        }
+        if(clawY>=crane.maxDrop || hitIndex!==-1){ grabbed = hitIndex!==-1 ? hitIndex : null; state.mode='lifting'; state.msg= grabbed!==null ? 'Dapat!' : 'Zonk, coba lagi'; updateHUD(); }
       }
-
       if(state.mode==='lifting'){
-        // Lift up
-        crane.rope = clamp(crane.rope-6, 60, crane.maxDrop);
-        // Move grabbed toy with claw
-        if(grabbed!==null){
-          const t=toys[grabbed];
-          t.x = lerp(t.x, crane.x, 0.5);
-          t.y = lerp(t.y, 82+crane.rope+20, 0.5);
-          // If near top, count as win
-          if(crane.rope<=62){
-            t.won=true; grabbed=null; state.score+=1; state.tries-=1; state.mode='resetting';
-            state.msg='Mantap! +1'; setToast('🎉 MENANG!'); updateHUD();
-            try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){ }
-          }
-        }else{
-          if(crane.rope<=62){ state.tries-=1; state.mode='resetting'; setToast('💤 Belum dapat...'); updateHUD(); }
-        }
+        crane.rope = clamp(crane.rope-6*dt, 60, crane.maxDrop);
+        if(grabbed!==null){ const t=toys[grabbed]; t.vx=0; t.x = lerp(t.x, crane.x, 0.5); t.y = lerp(t.y, 82+crane.rope+20, 0.5); if(crane.rope<=62){ t.won=true; grabbed=null; state.score+=1; state.tries-=1; state.mode='resetting'; state.msg='Mantap! +1'; setToast('🎉 MENANG!'); updateHUD(); try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){ } } }
+        else{ if(crane.rope<=62){ state.tries-=1; state.mode='resetting'; setToast('💤 Belum dapat...'); updateHUD(); } }
       }
-
-      if(state.mode==='resetting'){
-        // slight pause then back to idle
-        update._delay = (update._delay||0)+1;
-        if(update._delay>24){ update._delay=0; state.mode='idle'; state.msg= state.tries>0 ? 'Siap!' : 'Habis percobaan'; updateHUD(); }
-      }
-
+      if(state.mode==='resetting'){ update._delay=(update._delay||0)+dt*60; if(update._delay>24){ update._delay=0; state.mode='idle'; state.msg= state.tries>0 ? 'Siap!' : 'Habis percobaan'; updateHUD(); } }
       if(state.tries<=0 && state.running){ state.running=false; setToast('Permainan selesai. Tekan Reset untuk main lagi.'); }
     }
 
-    function render(){ ctx.clearRect(0,0,W,H); drawBackground(); drawToys(); drawCrane(); }
+    function render(){ ctx.clearRect(0,0,W,H); // background vignette + pit
+      const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H)); g.addColorStop(0,'rgba(79,70,229,.28)'); g.addColorStop(1,'rgba(0,0,0,.0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.fillStyle='rgba(13,20,41,.85)'; ctx.fillRect(0,H-60,W,60); ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H-60); ctx.lineTo(W,H-60); ctx.stroke();
+      // toys
+      for(const t of toys){ if(t.won) continue; ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(t.x, H-60+8, t.r*0.9, t.r*0.45, 0, 0, Math.PI*2); ctx.fill(); const size=t.r*2; if(t.img && t.img.complete){ ctx.drawImage(t.img, t.x-size/2, t.y-size/2, size, size); } else { ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill(); } }
+      // crane
+      ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke(); ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x, 82); ctx.lineTo(crane.x, 82+crane.rope); ctx.stroke(); const cy=82+crane.rope; ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x, cy, 12, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(crane.x, cy); ctx.lineTo(crane.x-14, cy+22); ctx.moveTo(crane.x, cy); ctx.lineTo(crane.x+14, cy+22); ctx.stroke(); }
 
-    function loop(){ update(); render(); requestAnimationFrame(loop); }
-    updateHUD();
-    loop(); // render sejak awal (meski belum running)
+    let grabbed=null;
+    function frame(now){ const dt=Math.max(0.5, Math.min(2.0, (now-last)/16.67)); last=now; update(dt); render(); requestAnimationFrame(frame); }
+    updateHUD(); requestAnimationFrame(frame);
 
-    // ======= INTRO =======
+    // ======= INTRO (manual start) =======
     const intro=document.getElementById('intro');
     const introVideo=document.getElementById('introVideo');
     const skipBtn=document.getElementById('skipIntro');
+    const tap=document.getElementById('tapToStart');
 
     function endIntro(){ intro.classList.add('hide'); setTimeout(()=> intro.style.display='none', 480); startGame(); }
     function startGame(){ if(state.running) return; state.running=true; state.msg='Siap!'; updateHUD(); try{ if(bgMusic.paused) bgMusic.play(); }catch(_){ } }
 
-    function tryPlayIntro(){ if(!introVideo) { endIntro(); return; } introVideo.play().catch(()=>{/*wajib gestur*/}); }
-
-    tryPlayIntro();
-    intro.addEventListener('click', endIntro);
+    // Jangan autoplay: tunggu interaksi
+    introVideo.pause();
+    intro.addEventListener('click', ()=>{ tap && (tap.style.display='none'); introVideo.play().catch(()=>{}); });
     skipBtn.addEventListener('click', (e)=>{ e.stopPropagation(); endIntro(); });
     introVideo.addEventListener('ended', endIntro);
   </script>
