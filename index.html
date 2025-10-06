@@ -293,10 +293,24 @@
 
     function tryPlayIntro(){ if(!introVideo) { endIntro(); return; } introVideo.play().catch(()=>{/*wajib gestur*/}); }
 
-    tryPlayIntro();
-    intro.addEventListener('click', endIntro);
-    skipBtn.addEventListener('click', (e)=>{ e.stopPropagation(); endIntro(); });
-    introVideo.addEventListener('ended', endIntro);
+    // Intro tidak otomatis jalan — tunggu interaksi
+introVideo.pause();
+
+// Klik di layar untuk mulai video intro
+intro.addEventListener('click', () => { 
+  introVideo.play(); 
+  document.getElementById('tapToStart').style.display = 'none';
+});
+
+// Tombol skip langsung masuk game
+skipBtn.addEventListener('click', (e) => { 
+  e.stopPropagation(); 
+  endIntro(); 
+});
+
+// Kalau video selesai, baru lanjut ke game
+introVideo.addEventListener('ended', endIntro);
+
   </script>
 </body>
 </html>
