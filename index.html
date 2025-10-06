@@ -15,7 +15,12 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:#0b1224;color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu,Inter,sans-serif}
-    body{background: #0b1224 url('assets/images/bg.jpg') center/cover no-repeat fixed;}
+    body {
+  background:
+    linear-gradient(180deg, #0a0f21, #000000b0),
+    url('assets/images/bg-baru.png') center/cover no-repeat fixed;
+}
+
     .wrap{max-width:900px;margin:0 auto;padding:16px}
     header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
     h1{font-size:clamp(18px,3vw,24px);margin:0;letter-spacing:.3px}
