@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Capit — Final Splash 3x Gagal</title>
+  <title>Game Capit — Smooth Start</title>
   <style>
     :root{ --text:#e5e7eb; --accent:#22d3ee; --accent2:#a78bfa; }
     *{box-sizing:border-box}
@@ -30,19 +30,23 @@
     .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;border:1px solid #374151;color:var(--text);padding:10px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35);display:none}
     .toast.show{display:block}
 
-    /* Splash screen awal */
+    /* Splash screen */
     #startScreen {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: #000;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 2000;
-      transition: opacity .6s ease;
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
     }
-    #startScreen.hide {opacity: 0; pointer-events: none;}
+    #startScreen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
     #startImage {
       max-width: 90%;
       max-height: 70vh;
@@ -51,7 +55,7 @@
       animation: fadeIn 1.5s ease;
     }
     #startBtn {
-      margin-top: 22px;
+      margin-top: 20px;
       background: linear-gradient(90deg,#22d3ee,#a78bfa);
       border: none;
       color: #001018;
@@ -85,7 +89,7 @@
       </div>
     </header>
 
-    <!-- Splash Screen dengan gambar -->
+    <!-- Splash Screen -->
     <div id="startScreen">
       <img src="assets/images/start.png" alt="Start Screen" id="startImage">
       <button id="startBtn">🎮 Mulai Game</button>
@@ -106,9 +110,8 @@
     const $=s=>document.querySelector(s);
     const lerp=(a,b,t)=>a+(b-a)*t; const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)); const rand=(min,max)=>Math.random()*(max-min)+min;
     const canvas=$('#game'); const ctx=canvas.getContext('2d');
-    const W=canvas.width, H=canvas.height;
-    const state={ running:false, mode:'idle', score:0, msg:'Siap!' };
-    let missCount=0;
+    const W=canvas.width,H=canvas.height;
+    const state={running:false,mode:'idle',score:0,msg:'Siap!'};let missCount=0;
     const ui={score:$('#score'),tries:$('#tries'),status:$('#status'),toast:$('#toast'),audioBtn:$('#audioBtn')};
     const setToast=t=>{ui.toast.textContent=t;ui.toast.classList.add('show');clearTimeout(setToast.t);setToast.t=setTimeout(()=>ui.toast.classList.remove('show'),1600);};
     const updateHUD=()=>{ui.score.textContent='Skor: '+state.score;ui.tries.textContent='Gagal: '+missCount+'/3';ui.status.textContent=state.msg;};
@@ -120,7 +123,6 @@
     const soundCatch=new Audio('assets/audio/catch.mp3');
     const soundExtend=new Audio('assets/audio/extend.mp3');
     const bgMusic=new Audio('assets/audio/bg-music.mp3'); bgMusic.loop=true; bgMusic.volume=0.5;
-
     function setMuted(m){[bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m);ui.audioBtn.textContent=m?'🔇':'🔈';}
     setMuted(false);
     ui.audioBtn.addEventListener('click',e=>{e.stopPropagation();setMuted(!bgMusic.muted);});
@@ -144,10 +146,10 @@
     let lastT=performance.now();function frame(now){const dt=Math.max(0.5,Math.min(2.0,(now-lastT)/16.67));lastT=now;update(dt);render();requestAnimationFrame(frame);}
     updateHUD();requestAnimationFrame(frame);
 
-    // === SPLASH SCREEN ===
+    // === Splash transition ===
     const startScreen=document.getElementById('startScreen');
     const startBtn=document.getElementById('startBtn');
-    startBtn.addEventListener('click',()=>{startScreen.classList.add('hide');try{bgMusic.muted=false;bgMusic.currentTime=0;bgMusic.play().catch(()=>{});}catch(_){ }state.running=true;setToast('🎮 Selamat Bermain!');});
+    startBtn.addEventListener('click',()=>{startScreen.classList.add('fade-out');setTimeout(()=>{startScreen.style.display='none';state.running=true;try{bgMusic.muted=false;bgMusic.currentTime=0;bgMusic.play().catch(()=>{});}catch(_){ }setToast('🎮 Selamat Bermain!');},1000);});
   </script>
 </body>
 </html>
