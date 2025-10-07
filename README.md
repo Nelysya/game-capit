@@ -1,21 +1,34 @@
-# Game Capit (HTML5 Canvas)
+🎮 Game Capit — RIALO Edition
 
-A simple claw machine game built with **HTML + Canvas**.  
-Use the arrow keys to move the claw and press **Spacebar** to drop it.  
-Earn points by successfully catching prizes!
+Rethink. Rebuild. Rialo.
+A modern web-based claw machine mini-game built with pure HTML5, CSS3, and JavaScript — fully optimized for static hosting (GitHub Pages / Vercel).
 
----
+🕹️ Features
 
-## 🎮 Features
-- Keyboard controls (← → + Spacebar)
-- Scoring system
-- **Customizable background**
-- *(Optional)* **Sound effects** — background music, drop, and catch sounds  
-- *(Optional)* **Intro animation** — video or GIF at game start  
-- *(Optional)* **Image prizes** — replace the default red box with real images
+✨ Smooth Gameplay
 
----
+Simple crane mechanic with realistic movement and grab detection.
 
-## 🗂 Folder Structure
+Infinite play with 3 allowed failures before Game Over.
 
-### Minimal version
+🎧 Immersive Audio
+
+Background music with smooth fade-in transition.
+
+Catch and drop sound effects for full arcade feel.
+
+🎨 Dynamic Visuals
+
+Animated lighting and soft shadows.
+
+Background image support (assets/images/bg.jpg).
+
+Easy to customize with your own assets.
+
+💾 Lightweight & Portable
+
+No dependencies, no frameworks.
+
+Works entirely offline once loaded.
+
+Perfect for embedding or showcasing.
