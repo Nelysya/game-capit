@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Capit — One-File Safe Build</title>
+  <title>Game Capit — Build Final (Center + Intro 2-step + Audio Fix)</title>
   <style>
     :root{ --text:#e5e7eb; --accent:#22d3ee; --accent2:#a78bfa; }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:#0b1224;color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu,Inter,sans-serif}
     body{background:#0b1224 center/cover no-repeat fixed;}
-    .wrap{max-width:900px;margin:0 auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+
+    /* layout */
+    .wrap{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-rows:auto 1fr;gap:12px;min-height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
     h1{font-size:clamp(18px,3vw,24px);margin:0;letter-spacing:.3px}
     .hud{display:flex;gap:10px;flex-wrap:wrap}
     .badge{background:#111827;border:1px solid #1f2937;border-radius:999px;padding:6px 12px;font-weight:600}
@@ -21,13 +23,13 @@
     button.ghost{background:#ffffffcc;color:#0b1224;border:1px solid #1f2937}
     button:active{transform:scale(.98)}
 
-    .machine{position:relative;background:linear-gradient(180deg,#0d1326,#0a0f21);border:1px solid #1f2937;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.35);overflow:hidden}
+    .stage{display:grid;place-items:center;min-height:calc(100vh - 120px);padding:12px 0}
+    .machine{position:relative;background:linear-gradient(180deg,#0d1326,#0a0f21);border:1px solid #1f2937;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.35);overflow:hidden;margin:0 auto;width:min(960px,92vw)}
     .top-bar{position:absolute;inset:0 0 auto 0;height:70px;background:linear-gradient(180deg,#0b182e,#0a1226);border-bottom:1px solid #21314d;display:flex;align-items:center;justify-content:center;z-index:5}
     .top-bar::after{content:"";position:absolute;inset:auto 10px 10px 10px;height:6px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);border-radius:999px}
 
     canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
-
-    .note{opacity:.9;font-size:.9rem;margin-top:8px;text-shadow:0 1px 0 #000}
+    .note{opacity:.9;font-size:.9rem;margin-top:8px;text-align:center;text-shadow:0 1px 0 #000}
 
     .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;border:1px solid #374151;color:var(--text);padding:10px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35);display:none}
     .toast.show{display:block}
@@ -43,7 +45,7 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>🎯 Game Capit — one-file safe build</h1>
+      <h1>🎯 Game Capit — build final</h1>
       <div class="hud">
         <div class="badge" id="score">Skor: 0</div>
         <div class="badge" id="tries">Percobaan: 5</div>
@@ -56,11 +58,13 @@
       </div>
     </header>
 
-    <div class="machine">
-      <div class="top-bar"><strong>CAPIT ZONE</strong></div>
-      <canvas id="game" width="960" height="540" aria-label="Canvas Game Capit"></canvas>
-    </div>
-    <div class="note">Tip: Tekan <b>Spasi</b> / tombol <b>DROP</b> saat capit berada di atas boneka. Sentuh layar juga bisa.</div>
+    <section class="stage">
+      <div class="machine">
+        <div class="top-bar"><strong>CAPIT ZONE</strong></div>
+        <canvas id="game" width="960" height="540" aria-label="Canvas Game Capit"></canvas>
+      </div>
+      <div class="note">Tip: Tekan <b>Spasi</b> / tombol <b>DROP</b> saat capit berada di atas boneka. Sentuh layar juga bisa.</div>
+    </section>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
@@ -69,7 +73,7 @@
   <div id="intro">
     <img id="introBg" src="assets/images/bg.jpg" alt="bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(1px) brightness(.9);" />
     <video id="introVideo" src="assets/video/intro.mp4" playsinline muted poster="assets/images/bg.jpg"></video>
-    <div id="tapToStart">🎮 Mulai Game</div>
+    <div id="tapToStart">▶️ Putar Intro</div>
     <button id="skipIntro" aria-hidden="true">Skip</button>
   </div>
 
@@ -83,9 +87,7 @@
       const bgImg=$('#introBg');
       const tryPng=()=>{ bgImg.onerror=null; bgImg.src='assets/images/bg.png'; document.body.style.backgroundImage="url('assets/images/bg.png')"; };
       bgImg.onerror=tryPng;
-      // also set body bg when loaded
       bgImg.onload=()=>{ document.body.style.backgroundImage = `url('${bgImg.src}')`; };
-      // poster fallback
       const v=$('#introVideo');
       const testPoster=new Image(); testPoster.src=v.poster; testPoster.onerror=()=>{ v.poster='assets/images/bg.png'; };
     })();
@@ -131,16 +133,31 @@
     function render(){ ctx.clearRect(0,0,W,H); const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H)); g.addColorStop(0,'rgba(79,70,229,.28)'); g.addColorStop(1,'rgba(0,0,0,.0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.fillStyle='rgba(13,20,41,.85)'; ctx.fillRect(0,H-60,W,60); ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H-60); ctx.lineTo(W,H-60); ctx.stroke(); for(const t of toys){ if(t.won) continue; ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(t.x,H-60+8,t.r*0.9,t.r*0.45,0,0,Math.PI*2); ctx.fill(); const size=t.r*2; if(t.img && t.img.complete){ ctx.drawImage(t.img,t.x-size/2,t.y-size/2,size,size); } else { ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill(); } } ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke(); ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x,82); ctx.lineTo(crane.x,82+crane.rope); ctx.stroke(); const cy=82+crane.rope; ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x,cy,12,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x-14,cy+22); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x+14,cy+22); ctx.stroke(); }
     let lastT=performance.now(); function frame(now){ const dt=Math.max(0.5,Math.min(2.0,(now-lastT)/16.67)); lastT=now; update(dt); render(); requestAnimationFrame(frame); } updateHUD(); requestAnimationFrame(frame);
 
-    // ======= Intro (Pause + tombol Mulai) =======
+    // ======= Intro (2-step: play video, then start button) =======
     const intro=$('#intro'); const introVideo=$('#introVideo'); const tap=$('#tapToStart');
-    function startGame(){ if(state.running) return; state.running=true; state.msg='Siap!'; updateHUD(); try{ bgMusic.currentTime=0; bgMusic.muted=false; bgMusic.play().catch(()=>{}); }catch(_){} }
-    function endIntro(){ intro.classList.add('hide'); setTimeout(()=>{ intro.style.display='none'; startGame(); }, 480); }
     introVideo.pause();
-    tap.addEventListener('click',()=>{ tap.textContent='Memulai...'; endIntro(); });
+    let introPhase='ready'; // 'ready' -> 'playing' -> 'done'
+    tap.textContent='▶️ Putar Intro';
+    tap.onclick=()=>{
+      if(introPhase==='ready'){
+        introPhase='playing'; tap.style.display='none'; introVideo.play().catch(()=>{});
+      }else if(introPhase==='done'){
+        endIntro();
+      }
+    };
+    introVideo.addEventListener('ended',()=>{ introPhase='done'; tap.textContent='🎮 Mulai Game'; tap.style.display='block'; });
 
-    // Safety: jika user gestur lain duluan, tetap izinkan audio
-    function resumeAudioOnce(){ document.removeEventListener('pointerdown',resumeAudioOnce); window.removeEventListener('keydown',resumeAudioOnce); try{ bgMusic.muted=false; bgMusic.play().catch(()=>{}); }catch(_){} }
-    document.addEventListener('pointerdown',resumeAudioOnce,{once:true}); window.addEventListener('keydown',resumeAudioOnce,{once:true});
+    // ======= Audio unlock + startGame =======
+    let audioUnlocked=false;
+    async function unlockAudio(){ if(audioUnlocked) return true; try{ const AC=window.AudioContext||window.webkitAudioContext; if(AC){ const ctx=new AC(); await ctx.resume(); const osc=ctx.createOscillator(); const g=ctx.createGain(); g.gain.value=0.00001; osc.connect(g).connect(ctx.destination); osc.start(0); osc.stop(ctx.currentTime+0.02);} audioUnlocked=true; return true; }catch(e){ console.warn('Audio unlock failed:',e); return false; } }
+
+    async function startGame(){ if(state.running) return; state.running=true; state.msg='Siap!'; updateHUD(); try{ await unlockAudio(); bgMusic.muted=false; bgMusic.currentTime=0; await bgMusic.play(); }catch(e){ console.warn('BGM blocked:',e); } }
+
+    function endIntro(){ intro.classList.add('hide'); setTimeout(()=>{ intro.style.display='none'; startGame(); }, 480); }
+
+    function tryResumeBGM(){ document.removeEventListener('pointerdown',tryResumeBGM); window.removeEventListener('keydown',tryResumeBGM); unlockAudio().then(()=>{ bgMusic.muted=false; bgMusic.play().catch(()=>{}); }); }
+    document.addEventListener('pointerdown',tryResumeBGM,{once:true}); window.addEventListener('keydown',tryResumeBGM,{once:true});
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden && state.running && bgMusic.paused){ bgMusic.play().catch(()=>{}); } });
   </script>
 </body>
 </html>
