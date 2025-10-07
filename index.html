@@ -149,7 +149,7 @@
     // === Splash transition ===
     const startScreen=document.getElementById('startScreen');
     const startBtn=document.getElementById('startBtn');
-    startBtn.addEventListener('click',()=>{startScreen.classList.add('fade-out');setTimeout(()=>{startScreen.style.display='none';state.running=true;try{bgMusic.muted=false;bgMusic.currentTime=0;bgMusic.play().catch(()=>{});}catch(_){ }setToast('🎮 Selamat Bermain!');},1000);});
+    startBtn.addEventListener('click',()=>{startScreen.classList.add('fade-out');setTimeout(()=>{startScreen.style.display='none';state.running=true;try{bgMusic.muted=false;bgMusic.currentTime=0;bgMusic.play().catch(()=>{});}catch(_){ }setToast('🎮 Have a Nice Play!');},1000);});
   </script>
 </body>
 </html>
