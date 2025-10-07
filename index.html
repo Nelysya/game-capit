@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rial Claw</title>
+  <title>Game Capit — Final</title>
   <style>
     :root{ --text:#e5e7eb; --accent:#22d3ee; --accent2:#a78bfa; }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:#0b1224;color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Ubuntu,Inter,sans-serif}
+    html,body{height:100%;margin:0;background:#0b1224;color:var(--text);font:16px/1.4 system-ui,Segoe UI,Roboto,Inter,sans-serif}
+    /* kalau mau pakai gambar: tambahkan url('assets/images/bg.jpg') setelah #0b1224 */
     body{background:#0b1224 center/cover no-repeat fixed;}
-    .wrap{max-width:900px;margin:0 auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+
+    /* layout utama */
+    .wrap{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-rows:auto 1fr;gap:12px;min-height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
     h1{font-size:clamp(18px,3vw,24px);margin:0;letter-spacing:.3px}
     .hud{display:flex;gap:10px;flex-wrap:wrap}
     .badge{background:#111827;border:1px solid #1f2937;border-radius:999px;padding:6px 12px;font-weight:600}
@@ -21,83 +24,76 @@
     button.ghost{background:#ffffffcc;color:#0b1224;border:1px solid #1f2937}
     button:active{transform:scale(.98)}
 
-    .machine{position:relative;background:linear-gradient(180deg,#0d1326,#0a0f21);border:1px solid #1f2937;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.35);overflow:hidden}
+    /* center panggung */
+    .stage{display:grid;place-items:center;min-height:calc(100vh - 120px);padding:12px 0}
+    .machine{
+      position:relative; margin:0 auto; width:min(960px,92vw);
+      background:linear-gradient(180deg,#0d1326,#0a0f21);
+      border:1px solid #1f2937; border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35) inset, 0 10px 30px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
     .top-bar{position:absolute;inset:0 0 auto 0;height:70px;background:linear-gradient(180deg,#0b182e,#0a1226);border-bottom:1px solid #21314d;display:flex;align-items:center;justify-content:center;z-index:5}
     .top-bar::after{content:"";position:absolute;inset:auto 10px 10px 10px;height:6px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);border-radius:999px}
 
     canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
-
-    .note{opacity:.9;font-size:.9rem;margin-top:8px;text-shadow:0 1px 0 #000}
+    .note{opacity:.9;font-size:.9rem;margin-top:8px;text-align:center;text-shadow:0 1px 0 #000}
 
     .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;border:1px solid #374151;color:var(--text);padding:10px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35);display:none}
     .toast.show{display:block}
-
-    /* Intro overlay */
-    #intro { position: fixed; inset: 0; background: rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index: 9999; transition: opacity .5s ease; }
-    #intro.hide{ opacity:0; pointer-events:none; }
-    #intro video{ max-width:100vw; max-height:100vh; object-fit:contain; }
-    #tapToStart{ position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:#fff; opacity:.95; background: rgba(0,0,0,.45); padding:10px 14px; border:1px solid rgba(255,255,255,.35); border-radius:10px; cursor:pointer; }
-    #skipIntro{ display:none; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>ðŸŽ¯ Rial Claw </h1>
+      <h1>🎯 Game Capit — Final</h1>
       <div class="hud">
         <div class="badge" id="score">Skor: 0</div>
-        <div class="badge" id="tries">Percobaan: 5</div>
-        <div class="badge" id="status">Menunggu mulaiâ€¦</div>
+        <div class="badge" id="tries">Percobaan: ∞</div>
+        <div class="badge" id="status">Siap!</div>
       </div>
       <div class="btns">
         <button class="primary" id="btnDrop">DROP (Spasi)</button>
         <button class="secondary" id="btnReset">Reset</button>
-        <button class="ghost" id="audioBtn" title="Toggle sound">ðŸ”ˆ</button>
+        <button class="ghost" id="audioBtn" title="Toggle sound">🔈</button>
       </div>
     </header>
 
-    <div class="machine">
-      <div class="top-bar"><strong>CAPIT ZONE</strong></div>
-      <canvas id="game" width="960" height="540" aria-label="Canvas Game Capit"></canvas>
-    </div>
-    <div class="note">Tip: Tekan <b>Spasi</b> / tombol <b>DROP</b> saat capit berada di atas boneka. Sentuh layar juga bisa.</div>
+    <section class="stage">
+      <div class="machine">
+        <div class="top-bar"><strong>CAPIT ZONE</strong></div>
+        <canvas id="game" width="960" height="540" aria-label="Canvas Game Capit"></canvas>
+      </div>
+      <div class="note">Tip: Tekan <b>Spasi</b> / tombol <b>DROP</b> saat capit berada di atas boneka. Sentuh layar juga bisa.</div>
+    </section>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- Intro overlay (video + robust bg fallback) -->
-  <div id="intro">
-    <img id="introBg" src="assets/images/bg.jpg" alt="bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(1px) brightness(.9);" />
-    <video id="introVideo" src="assets/video/intro.mp4" playsinline muted poster="assets/images/bg.jpg"></video>
-    <div id="tapToStart">ðŸŽ® Play Game</div>
-    <button id="skipIntro" aria-hidden="true">Skip</button>
-  </div>
-
   <script>
-    // ======= Tiny helpers =======
-    const $=sel=>document.querySelector(sel);
-    const lerp=(a,b,t)=>a+(b-a)*t; const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)); const rand=(min,max)=>Math.random()*(max-min)+min;
+    // helpers
+    const $=s=>document.querySelector(s);
+    const lerp=(a,b,t)=>a+(b-a)*t;
+    const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+    const rand=(min,max)=>Math.random()*(max-min)+min;
 
-    // ======= Robust BG fallback (jpg -> png) =======
-    (function(){
-      const bgImg=$('#introBg');
-      const tryPng=()=>{ bgImg.onerror=null; bgImg.src='assets/images/bg.png'; document.body.style.backgroundImage="url('assets/images/bg.png')"; };
-      bgImg.onerror=tryPng;
-      // also set body bg when loaded
-      bgImg.onload=()=>{ document.body.style.backgroundImage = `url('${bgImg.src}')`; };
-      // poster fallback
-      const v=$('#introVideo');
-      const testPoster=new Image(); testPoster.src=v.poster; testPoster.onerror=()=>{ v.poster='assets/images/bg.png'; };
-    })();
-
-    // ======= HUD / State =======
-    const canvas=$('#game'); const ctx=canvas.getContext('2d'); const W=canvas.width, H=canvas.height;
-    const state={ running:false, mode:'idle', score:0, tries:5, msg:'Siap!' };
+    // canvas & HUD
+    const canvas=$('#game'); const ctx=canvas.getContext('2d');
+    const W=canvas.width, H=canvas.height;
     const ui={ score:$('#score'), tries:$('#tries'), status:$('#status'), toast:$('#toast'), audioBtn:$('#audioBtn') };
-    const setToast=(t)=>{ ui.toast.textContent=t; ui.toast.classList.add('show'); clearTimeout(setToast.t); setToast.t=setTimeout(()=>ui.toast.classList.remove('show'),1600); };
-    const updateHUD=()=>{ ui.score.textContent='Skor: '+state.score; ui.tries.textContent='Percobaan: '+state.tries; ui.status.textContent=state.msg; };
+    const setToast=t=>{ ui.toast.textContent=t; ui.toast.classList.add('show'); clearTimeout(setToast.t); setToast.t=setTimeout(()=>ui.toast.classList.remove('show'),1600); };
 
-    // ======= Assets =======
+    // state
+    const state={ running:true, mode:'idle', score:0, msg:'Siap!' };
+    let zonkStreak = 0; // <<— 3x zonk beruntun = Game Over
+
+    const updateHUD=()=>{
+      ui.score.textContent='Skor: '+state.score;
+      ui.tries.textContent='Percobaan: ∞';
+      ui.status.textContent=state.msg;
+    };
+
+    // assets
     const PRIZE_SRCS=['assets/images/prize1.png','assets/images/prize2.png','assets/images/prize3.png'];
     const PRIZE_IMGS=PRIZE_SRCS.map(s=>{ const i=new Image(); i.src=s; return i; });
     const prizeImg=()=> PRIZE_IMGS[Math.floor(Math.random()*PRIZE_IMGS.length)]||null;
@@ -105,42 +101,186 @@
     const soundCatch=new Audio('assets/audio/catch.mp3');
     const soundExtend=new Audio('assets/audio/extend.mp3');
     const bgMusic=new Audio('assets/audio/bg-music.mp3'); bgMusic.loop=true; bgMusic.volume=0.5;
-    function setMuted(m){ [bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m); ui.audioBtn.textContent=m?'ðŸ”‡':'ðŸ”ˆ'; }
+
+    function setMuted(m){ [bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m); ui.audioBtn.textContent=m?'🔇':'🔈'; }
     setMuted(false);
     ui.audioBtn.addEventListener('click',e=>{ e.stopPropagation(); setMuted(!bgMusic.muted); });
 
-    // ======= World =======
-    const groundY=H-60; const crane={ x:W*0.5, y:80, dir:1, speed:2.2, width:70, arm:18, rope:60, maxDrop:groundY-90 };
+    // world
+    const groundY=H-60;
+    const crane={ x:W*0.5, y:80, dir:1, speed:2.2, width:70, arm:18, rope:60, maxDrop:groundY-90 };
+
     const toys=[]; let tClock=0, grabbed=null;
-    function spawnToys(){ toys.length=0; const cols=6, rows=2; const padX=70, cellW=(W-2*padX)/cols, cellH=70; for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){ const cx=padX+cellW*(c+0.5)+rand(-8,8); const cy=groundY-20 - r*cellH + rand(-6,6); const speed=rand(0.6,1.2)*(Math.random()<0.5?-1:1); const phase=Math.random()*Math.PI*2; toys.push({x:cx,y:cy,baseY:cy,r:22,won:false,img:prizeImg(),vx:speed,phase,amp:3+Math.random()*2}); } } }
-    function moveToys(dt){ const minX=70,maxX=W-70; tClock+=dt*0.05; for(const t of toys){ if(t.won) continue; t.x+=t.vx*dt; if(t.x<minX){t.x=minX;t.vx=Math.abs(t.vx);} if(t.x>maxX){t.x=maxX;t.vx=-Math.abs(t.vx);} t.y=t.baseY+Math.sin(tClock+t.phase)*t.amp; if(Math.random()<0.003){ t.vx*=-1; } } }
+    function spawnToys(){
+      toys.length=0;
+      const cols=6, rows=2; const padX=70, cellW=(W-2*padX)/cols, cellH=70;
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const cx=padX+cellW*(c+0.5)+rand(-8,8);
+          const cy=groundY-20 - r*cellH + rand(-6,6);
+          const speed=rand(0.6,1.2)*(Math.random()<0.5?-1:1);
+          const phase=Math.random()*Math.PI*2;
+          toys.push({x:cx,y:cy,baseY:cy,r:22,won:false,img:prizeImg(),vx:speed,phase,amp:3+Math.random()*2});
+        }
+      }
+    }
     spawnToys();
 
-    // ======= Input =======
-    function tryDrop(){ if(!state.running) return; if(state.mode!=='idle'||state.tries<=0) return; state.mode='dropping'; state.msg='Menurunkan...'; try{ soundExtend.currentTime=0; soundExtend.play(); }catch(_){} updateHUD(); }
-    $('#btnDrop').addEventListener('click',tryDrop); $('#btnReset').addEventListener('click',()=>{ state.score=0; state.tries=5; state.mode='idle'; state.msg='Siap!'; crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2; spawnToys(); updateHUD(); setToast('Reset! Semangat âœ¨'); });
-    window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); tryDrop(); } }); canvas.addEventListener('pointerdown',tryDrop);
-
-    // ======= Loop =======
-    let last=performance.now(); function update(dt){ if(!state.running) return; moveToys(dt); if(state.mode==='idle'){ crane.x+=crane.speed*crane.dir*dt; if(crane.x<70){crane.x=70;crane.dir=1} if(crane.x>W-70){crane.x=W-70;crane.dir=-1} }
-      if(state.mode==='dropping'){ crane.rope=clamp(crane.rope+5*dt,60,crane.maxDrop); const clawY=82+crane.rope; let hit=-1; for(let i=0;i<toys.length;i++){ const t=toys[i]; if(t.won) continue; const d=Math.hypot(t.x-crane.x,t.y-clawY); if(d<t.r+crane.arm){ hit=i; break; } } if(clawY>=crane.maxDrop||hit!==-1){ grabbed=hit!==-1?hit:null; state.mode='lifting'; state.msg=grabbed!==null?'Dapat!':'Zonk, coba lagi'; updateHUD(); } }
-      if(state.mode==='lifting'){ crane.rope=clamp(crane.rope-6*dt,60,crane.maxDrop); if(grabbed!==null){ const t=toys[grabbed]; t.vx=0; t.x=lerp(t.x,crane.x,0.5); t.y=lerp(t.y,82+crane.rope+20,0.5); if(crane.rope<=62){ t.won=true; grabbed=null; state.score+=1; state.tries-=1; state.mode='resetting'; state.msg='Mantap! +1'; setToast('ðŸŽ‰ MENANG!'); updateHUD(); try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){} } } else { if(crane.rope<=62){ state.tries-=1; state.mode='resetting'; setToast('ðŸ’¤ Belum dapat...'); updateHUD(); } } }
-      if(state.mode==='resetting'){ update._t=(update._t||0)+dt*60; if(update._t>24){ update._t=0; state.mode='idle'; state.msg= state.tries>0 ? 'Siap!' : 'Habis percobaan'; updateHUD(); } }
-      if(state.tries<=0&&state.running){ state.running=false; setToast('Permainan selesai. Tekan Reset untuk main lagi.'); }
+    function moveToys(dt){
+      const minX=70,maxX=W-70; tClock+=dt*0.05;
+      for(const t of toys){
+        if(t.won) continue;
+        t.x+=t.vx*dt;
+        if(t.x<minX){t.x=minX;t.vx=Math.abs(t.vx);}
+        if(t.x>maxX){t.x=maxX;t.vx=-Math.abs(t.vx);}
+        t.y=t.baseY+Math.sin(tClock+t.phase)*t.amp;
+        if(Math.random()<0.003){ t.vx*=-1; }
+      }
     }
-    function render(){ ctx.clearRect(0,0,W,H); const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H)); g.addColorStop(0,'rgba(79,70,229,.28)'); g.addColorStop(1,'rgba(0,0,0,.0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.fillStyle='rgba(13,20,41,.85)'; ctx.fillRect(0,H-60,W,60); ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H-60); ctx.lineTo(W,H-60); ctx.stroke(); for(const t of toys){ if(t.won) continue; ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(t.x,H-60+8,t.r*0.9,t.r*0.45,0,0,Math.PI*2); ctx.fill(); const size=t.r*2; if(t.img && t.img.complete){ ctx.drawImage(t.img,t.x-size/2,t.y-size/2,size,size); } else { ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill(); } } ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke(); ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x,82); ctx.lineTo(crane.x,82+crane.rope); ctx.stroke(); const cy=82+crane.rope; ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x,cy,12,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x-14,cy+22); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x+14,cy+22); ctx.stroke(); }
-    let lastT=performance.now(); function frame(now){ const dt=Math.max(0.5,Math.min(2.0,(now-lastT)/16.67)); lastT=now; update(dt); render(); requestAnimationFrame(frame); } updateHUD(); requestAnimationFrame(frame);
 
-    // ======= Intro (Pause + tombol Mulai) =======
-    const intro=$('#intro'); const introVideo=$('#introVideo'); const tap=$('#tapToStart');
-    function startGame(){ if(state.running) return; state.running=true; state.msg='Siap!'; updateHUD(); try{ bgMusic.currentTime=0; bgMusic.muted=false; bgMusic.play().catch(()=>{}); }catch(_){} }
-    function endIntro(){ intro.classList.add('hide'); setTimeout(()=>{ intro.style.display='none'; startGame(); }, 480); }
-    introVideo.pause();
-    tap.addEventListener('click',()=>{ tap.textContent='Memulai...'; endIntro(); });
+    // input
+    function tryDrop(){
+      if(!state.running) return;
+      if(state.mode!=='idle') return;
+      state.mode='dropping'; state.msg='Menurunkan...';
+      try{ soundExtend.currentTime=0; soundExtend.play(); }catch(_){}
+      updateHUD();
+    }
+    $('#btnDrop').addEventListener('click',tryDrop);
+    $('#btnReset').addEventListener('click',()=>{
+      state.score=0; state.mode='idle'; state.msg='Siap!'; zonkStreak=0;
+      crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2;
+      spawnToys(); state.running=true; updateHUD(); setToast('Reset! Semangat ✨');
+    });
+    window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); tryDrop(); } });
+    canvas.addEventListener('pointerdown',tryDrop);
 
-    // Safety: jika user gestur lain duluan, tetap izinkan audio
-    function resumeAudioOnce(){ document.removeEventListener('pointerdown',resumeAudioOnce); window.removeEventListener('keydown',resumeAudioOnce); try{ bgMusic.muted=false; bgMusic.play().catch(()=>{}); }catch(_){} }
-    document.addEventListener('pointerdown',resumeAudioOnce,{once:true}); window.addEventListener('keydown',resumeAudioOnce,{once:true});
+    // loop
+    function drawBackground(){
+      const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H));
+      g.addColorStop(0,'rgba(79,70,229,.28)'); g.addColorStop(1,'rgba(0,0,0,.0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(13,20,41,.85)'; ctx.fillRect(0,H-60,W,60);
+      ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H-60); ctx.lineTo(W,H-60); ctx.stroke();
+    }
+    function drawToys(){
+      for(const t of toys){
+        if(t.won) continue;
+        ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath();
+        ctx.ellipse(t.x,H-60+8,t.r*0.9,t.r*0.45,0,0,Math.PI*2); ctx.fill();
+        const size=t.r*2;
+        if(t.img && t.img.complete){ ctx.drawImage(t.img,t.x-size/2,t.y-size/2,size,size); }
+        else { ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill(); }
+      }
+    }
+    function drawCrane(){
+      ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke();
+      ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22);
+      ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x,82); ctx.lineTo(crane.x,82+crane.rope); ctx.stroke();
+      const cy=82+crane.rope; ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x,cy,12,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x-14,cy+22);
+      ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x+14,cy+22); ctx.stroke();
+    }
+
+    function render(){ ctx.clearRect(0,0,W,H); drawBackground(); drawToys(); drawCrane(); }
+
+    function update(dt){
+      if(!state.running) return;
+
+      moveToys(dt);
+
+      if(state.mode==='idle'){
+        crane.x+=crane.speed*crane.dir*dt;
+        if(crane.x<70){crane.x=70;crane.dir=1}
+        if(crane.x>W-70){crane.x=W-70;crane.dir=-1}
+      }
+
+      if(state.mode==='dropping'){
+        crane.rope=clamp(crane.rope+5*dt,60,crane.maxDrop);
+        const clawY=82+crane.rope; let hit=-1;
+        for(let i=0;i<toys.length;i++){
+          const t=toys[i]; if(t.won) continue;
+          const d=Math.hypot(t.x-crane.x,t.y-clawY);
+          if(d<t.r+crane.arm){ hit=i; break; }
+        }
+        if(clawY>=crane.maxDrop || hit!==-1){
+          grabbed = hit!==-1 ? hit : null;
+          state.mode='lifting';
+          state.msg= grabbed!==null ? 'Dapat!' : 'Zonk, coba lagi';
+          updateHUD();
+        }
+      }
+
+      // === BLOK GAME OVER 3x ZONK BERURUTAN ===
+      if(state.mode==='lifting'){
+        crane.rope = clamp(crane.rope - 6*dt, 60, crane.maxDrop);
+
+        if(grabbed !== null){
+          // MENANG
+          const t = toys[grabbed];
+          t.vx = 0;
+          t.x = lerp(t.x, crane.x, 0.5);
+          t.y = lerp(t.y, 82 + crane.rope + 20, 0.5);
+          if(crane.rope <= 62){
+            t.won = true;
+            grabbed = null;
+            state.score += 1;
+            state.mode = 'resetting';
+            state.msg = 'Mantap! +1';
+            zonkStreak = 0; // reset karena menang
+            setToast('🎉 MENANG!');
+            updateHUD();
+            try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){}
+          }
+        } else {
+          // ZONK
+          if(crane.rope <= 62){
+            state.mode='resetting';
+            zonkStreak += 1;
+            setToast(`💤 Zonk ke-${zonkStreak}!`);
+            updateHUD();
+
+            if(zonkStreak >= 3){
+              state.running = false;
+              state.msg = '💥 GAME OVER (3x Zonk)';
+              setToast('💥 GAME OVER — 3x Zonk!');
+              updateHUD();
+            }
+          }
+        }
+      }
+
+      if(state.mode==='resetting'){
+        update._t=(update._t||0)+dt*60;
+        if(update._t>24){
+          update._t=0;
+          state.mode='idle';
+          if(state.running) state.msg='Siap!';
+          updateHUD();
+        }
+      }
+    }
+
+    let lastT=performance.now();
+    function frame(now){
+      const dt=Math.max(0.5,Math.min(2.0,(now-lastT)/16.67)); // normalisasi ~60fps
+      lastT=now; update(dt); render(); requestAnimationFrame(frame);
+    }
+    updateHUD(); requestAnimationFrame(frame);
+
+    // === Musik langsung saat halaman dibuka + fallback gesture ===
+    window.addEventListener('load', ()=>{
+      try{ bgMusic.muted=false; bgMusic.currentTime=0; bgMusic.play().catch(()=>{}); }catch(_){}
+    });
+    function resumeBGMOnce(){
+      document.removeEventListener('pointerdown', resumeBGMOnce);
+      window.removeEventListener('keydown', resumeBGMOnce);
+      try{ bgMusic.muted=false; bgMusic.play().catch(()=>{}); }catch(_){}
+    }
+    document.addEventListener('pointerdown', resumeBGMOnce, { once:true });
+    window.addEventListener('keydown',  resumeBGMOnce, { once:true });
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && state.running && bgMusic.paused){ bgMusic.play().catch(()=>{}); }});
   </script>
 </body>
 </html>
