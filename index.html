@@ -43,16 +43,16 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>🎯 Rial Claw </h1>
+      <h1>ðŸŽ¯ Rial Claw </h1>
       <div class="hud">
         <div class="badge" id="score">Skor: 0</div>
         <div class="badge" id="tries">Percobaan: 5</div>
-        <div class="badge" id="status">Menunggu mulai…</div>
+        <div class="badge" id="status">Menunggu mulaiâ€¦</div>
       </div>
       <div class="btns">
         <button class="primary" id="btnDrop">DROP (Spasi)</button>
         <button class="secondary" id="btnReset">Reset</button>
-        <button class="ghost" id="audioBtn" title="Toggle sound">🔈</button>
+        <button class="ghost" id="audioBtn" title="Toggle sound">ðŸ”ˆ</button>
       </div>
     </header>
 
@@ -69,7 +69,7 @@
   <div id="intro">
     <img id="introBg" src="assets/images/bg.jpg" alt="bg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(1px) brightness(.9);" />
     <video id="introVideo" src="assets/video/intro.mp4" playsinline muted poster="assets/images/bg.jpg"></video>
-    <div id="tapToStart">🎮 Play Game</div>
+    <div id="tapToStart">ðŸŽ® Play Game</div>
     <button id="skipIntro" aria-hidden="true">Skip</button>
   </div>
 
@@ -105,7 +105,7 @@
     const soundCatch=new Audio('assets/audio/catch.mp3');
     const soundExtend=new Audio('assets/audio/extend.mp3');
     const bgMusic=new Audio('assets/audio/bg-music.mp3'); bgMusic.loop=true; bgMusic.volume=0.5;
-    function setMuted(m){ [bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m); ui.audioBtn.textContent=m?'🔇':'🔈'; }
+    function setMuted(m){ [bgMusic,soundCatch,soundExtend].forEach(a=>a.muted=m); ui.audioBtn.textContent=m?'ðŸ”‡':'ðŸ”ˆ'; }
     setMuted(false);
     ui.audioBtn.addEventListener('click',e=>{ e.stopPropagation(); setMuted(!bgMusic.muted); });
 
@@ -118,13 +118,13 @@
 
     // ======= Input =======
     function tryDrop(){ if(!state.running) return; if(state.mode!=='idle'||state.tries<=0) return; state.mode='dropping'; state.msg='Menurunkan...'; try{ soundExtend.currentTime=0; soundExtend.play(); }catch(_){} updateHUD(); }
-    $('#btnDrop').addEventListener('click',tryDrop); $('#btnReset').addEventListener('click',()=>{ state.score=0; state.tries=5; state.mode='idle'; state.msg='Siap!'; crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2; spawnToys(); updateHUD(); setToast('Reset! Semangat ✨'); });
+    $('#btnDrop').addEventListener('click',tryDrop); $('#btnReset').addEventListener('click',()=>{ state.score=0; state.tries=5; state.mode='idle'; state.msg='Siap!'; crane.rope=60; crane.x=W*0.5; crane.dir=1; crane.speed=2.2; spawnToys(); updateHUD(); setToast('Reset! Semangat âœ¨'); });
     window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); tryDrop(); } }); canvas.addEventListener('pointerdown',tryDrop);
 
     // ======= Loop =======
     let last=performance.now(); function update(dt){ if(!state.running) return; moveToys(dt); if(state.mode==='idle'){ crane.x+=crane.speed*crane.dir*dt; if(crane.x<70){crane.x=70;crane.dir=1} if(crane.x>W-70){crane.x=W-70;crane.dir=-1} }
       if(state.mode==='dropping'){ crane.rope=clamp(crane.rope+5*dt,60,crane.maxDrop); const clawY=82+crane.rope; let hit=-1; for(let i=0;i<toys.length;i++){ const t=toys[i]; if(t.won) continue; const d=Math.hypot(t.x-crane.x,t.y-clawY); if(d<t.r+crane.arm){ hit=i; break; } } if(clawY>=crane.maxDrop||hit!==-1){ grabbed=hit!==-1?hit:null; state.mode='lifting'; state.msg=grabbed!==null?'Dapat!':'Zonk, coba lagi'; updateHUD(); } }
-      if(state.mode==='lifting'){ crane.rope=clamp(crane.rope-6*dt,60,crane.maxDrop); if(grabbed!==null){ const t=toys[grabbed]; t.vx=0; t.x=lerp(t.x,crane.x,0.5); t.y=lerp(t.y,82+crane.rope+20,0.5); if(crane.rope<=62){ t.won=true; grabbed=null; state.score+=1; state.tries-=1; state.mode='resetting'; state.msg='Mantap! +1'; setToast('🎉 MENANG!'); updateHUD(); try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){} } } else { if(crane.rope<=62){ state.tries-=1; state.mode='resetting'; setToast('💤 Belum dapat...'); updateHUD(); } } }
+      if(state.mode==='lifting'){ crane.rope=clamp(crane.rope-6*dt,60,crane.maxDrop); if(grabbed!==null){ const t=toys[grabbed]; t.vx=0; t.x=lerp(t.x,crane.x,0.5); t.y=lerp(t.y,82+crane.rope+20,0.5); if(crane.rope<=62){ t.won=true; grabbed=null; state.score+=1; state.tries-=1; state.mode='resetting'; state.msg='Mantap! +1'; setToast('ðŸŽ‰ MENANG!'); updateHUD(); try{ soundCatch.currentTime=0; soundCatch.play(); }catch(_){} } } else { if(crane.rope<=62){ state.tries-=1; state.mode='resetting'; setToast('ðŸ’¤ Belum dapat...'); updateHUD(); } } }
       if(state.mode==='resetting'){ update._t=(update._t||0)+dt*60; if(update._t>24){ update._t=0; state.mode='idle'; state.msg= state.tries>0 ? 'Siap!' : 'Habis percobaan'; updateHUD(); } }
       if(state.tries<=0&&state.running){ state.running=false; setToast('Permainan selesai. Tekan Reset untuk main lagi.'); }
     }
