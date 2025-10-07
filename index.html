@@ -133,18 +133,7 @@
     function render(){ ctx.clearRect(0,0,W,H); const g=ctx.createRadialGradient(W/2,H*0.4,50,W/2,H*0.6,Math.max(W,H)); g.addColorStop(0,'rgba(79,70,229,.28)'); g.addColorStop(1,'rgba(0,0,0,.0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.fillStyle='rgba(13,20,41,.85)'; ctx.fillRect(0,H-60,W,60); ctx.strokeStyle='#1f2a47'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,H-60); ctx.lineTo(W,H-60); ctx.stroke(); for(const t of toys){ if(t.won) continue; ctx.fillStyle='rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(t.x,H-60+8,t.r*0.9,t.r*0.45,0,0,Math.PI*2); ctx.fill(); const size=t.r*2; if(t.img && t.img.complete){ ctx.drawImage(t.img,t.x-size/2,t.y-size/2,size,size); } else { ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(t.x,t.y,t.r,0,Math.PI*2); ctx.fill(); } } ctx.strokeStyle='#21314d'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(W-40,60); ctx.stroke(); ctx.fillStyle='#1f2a47'; ctx.fillRect(crane.x-40,60,80,22); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(crane.x,82); ctx.lineTo(crane.x,82+crane.rope); ctx.stroke(); const cy=82+crane.rope; ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.arc(crane.x,cy,12,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#c7d2fe'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x-14,cy+22); ctx.moveTo(crane.x,cy); ctx.lineTo(crane.x+14,cy+22); ctx.stroke(); }
     let lastT=performance.now(); function frame(now){ const dt=Math.max(0.5,Math.min(2.0,(now-lastT)/16.67)); lastT=now; update(dt); render(); requestAnimationFrame(frame); } updateHUD(); requestAnimationFrame(frame);
 
-    // ======= Intro (2-step: play video, then start button) =======
-    const intro=$('#intro'); const introVideo=$('#introVideo'); const tap=$('#tapToStart');
-    introVideo.pause();
-    let introPhase='ready'; // 'ready' -> 'playing' -> 'done'
-    tap.textContent='▶️ Putar Intro';
-    tap.onclick=()=>{
-      if(introPhase==='ready'){
-        introPhase='playing'; tap.style.display='none'; introVideo.play().catch(()=>{});
-      }else if(introPhase==='done'){
-        endIntro();
-      }
-    };
+
     introVideo.addEventListener('ended',()=>{ introPhase='done'; tap.textContent='🎮 Mulai Game'; tap.style.display='block'; });
 
     // ======= Audio unlock + startGame =======
